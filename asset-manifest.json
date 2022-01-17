@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/bits-of-good/static/css/main.2a421a6c.css",
+    "main.js": "/bits-of-good/static/js/main.244f2d4e.js",
+    "static/js/787.4f5d6d49.chunk.js": "/bits-of-good/static/js/787.4f5d6d49.chunk.js",
+    "static/media/logo.svg": "/bits-of-good/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "index.html": "/bits-of-good/index.html",
+    "main.2a421a6c.css.map": "/bits-of-good/static/css/main.2a421a6c.css.map",
+    "main.244f2d4e.js.map": "/bits-of-good/static/js/main.244f2d4e.js.map",
+    "787.4f5d6d49.chunk.js.map": "/bits-of-good/static/js/787.4f5d6d49.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2a421a6c.css",
+    "static/js/main.244f2d4e.js"
+  ]
+}
