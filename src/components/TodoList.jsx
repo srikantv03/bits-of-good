@@ -11,7 +11,8 @@ class TodoList extends React.Component {
         tagsToAdd: [],
         titleToAdd: "",
         dueToAdd: "",
-        sortState: []
+        sortState: [],
+        tag: ""
     }
 
     constructor(props) {
@@ -48,23 +49,26 @@ class TodoList extends React.Component {
                 tagsToAdd: []
             });
             this.sortValues();
-            this.newTag.value = "";
+           
         }
         
 
     }
 
-    addTagToTask = () => {
-        if (!this.state.tagsToAdd.includes(this.newTag.current.value)) {
-            this.setState(prevState => ({
+    addTagToTask = async () => {
+        if (!this.state.tagsToAdd.includes(this.newTag.current.value) && this.newTag.current.value != "") {
+            await this.setState(prevState => ({
                 tagsToAdd: [...prevState.tagsToAdd,
                     this.newTag.current.value]
             }));
+            this.setState({
+                tag: ""
+            });
         }
+        
     }
 
     sortHandler = async (event) => {
-        console.log(this.state.sortState);
         if (this.state.listItems.length > 0) {
             const i = this.state.sortState.indexOf(event.target.value);
             if (i != -1) {
@@ -159,6 +163,12 @@ class TodoList extends React.Component {
         this.sortValues();
     }
 
+    handleTagChange = (event) => {
+        this.setState({
+            tag: event.target.value
+        })
+    }
+
 
 
     render() {
@@ -170,10 +180,10 @@ class TodoList extends React.Component {
         const listItem = this.state.listItems.map((item) =>
             <div key={item.id}>
             <Card style={cardStyle}>
-                <Grid container spacing={2}>
+                <Grid justifyContent="center" align="center" container spacing={2}>
                     <Grid 
                     align="center"
-                    justify="center" 
+                    justifyContent="center" 
                     item sm={2}>
                         <input className="checkbox"
                         type="checkbox"
@@ -201,7 +211,7 @@ class TodoList extends React.Component {
         );
 
         return <div>
-            <h1>Bits of Good - Todo List</h1>
+            <h1>Bits of Good - To-do List</h1>
             <h4>Srikant Vasudevan</h4>
             <Grid padding={5} container spacing={2}>
                 <Grid item md={6}>
@@ -212,8 +222,8 @@ class TodoList extends React.Component {
                     </Grid>
                     <Grid container padding={5} spacing={2}>
                         <Grid item sm={12}>
-                            <InputLabel>Task Title</InputLabel>
-                            <TextField value={this.state.titleToAdd} onChange={this.handleTitleChange} sx={{ width: 1 }} inputRef={this.name}/>
+                            <InputLabel htmlFor="title">Task Title</InputLabel>
+                            <TextField value={this.state.titleToAdd} onChange={this.handleTitleChange} sx={{ width: 1 }} inputRef={this.name} name="title" id="title"/>
                         </Grid>
                         <Grid item sm={12}>
                             <InputLabel>Due Date</InputLabel>
@@ -228,10 +238,10 @@ class TodoList extends React.Component {
                         
                         <Grid item sm={8}>
                             <InputLabel>New Tag</InputLabel>
-                            <TextField sx={{ width: 1 }} inputRef={this.newTag} />
+                            <TextField value={this.state.tag} onChange={this.handleTagChange} sx={{ width: 1 }} inputRef={this.newTag} />
                         </Grid>
                         <Grid item sm={4}>
-                            <Button color='secondary' variant='contained' sx={{ width: 1}} onClick={this.addTagToTask}>Add Tag</Button>
+                            <Button color='secondary' variant='contained' sx={{ width: 1, height: 1}} onClick={this.addTagToTask}>Add Tag</Button>
                         </Grid>
                         <Grid item sm={12}>
                             <Button sx={{ width: 1, height: '90px' }} onClick={this.handleSubmit} variant="contained">Add Task</Button> 
@@ -241,24 +251,24 @@ class TodoList extends React.Component {
                     </Card>
                 </Grid>
                 <Grid item md={6}>
-                    <Card sx={{height: 1}}>
+                    <Card sx={{height: 1, width: 1}}>
                     <Grid padding={2} container spacing={2}>
-                        <Grid item md={12}>
+                        <Grid item sm={12}>
                             <ToggleButtonGroup
                             color="primary"
                             value={this.state.sortState}
                             onChange={this.sortHandler}
                             aria-label="text formatting"
                             >
-                            <ToggleButton value="dueSort" aria-label="bold">
-                                Sort by Due Date
-                            </ToggleButton>
-                            <ToggleButton value="completedSort" aria-label="italic">
-                                Sort by Completed
-                            </ToggleButton>
+                                <ToggleButton value="dueSort" aria-label="bold">
+                                    Sort by Due Date
+                                </ToggleButton>
+                                <ToggleButton value="completedSort" aria-label="italic">
+                                    Sort by Completed
+                                </ToggleButton>
                             </ToggleButtonGroup>
                         </Grid>
-                        <Grid item md={12}>
+                        <Grid item sm={12}>
                             {listItem}
                         </Grid>
                         
