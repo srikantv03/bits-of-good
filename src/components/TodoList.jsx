@@ -10,7 +10,8 @@ class TodoList extends React.Component {
         tags: [],
         tagsToAdd: [],
         titleToAdd: "",
-        dueToAdd: ""
+        dueToAdd: "",
+        sortState: []
     }
 
     constructor(props) {
@@ -41,45 +42,63 @@ class TodoList extends React.Component {
                 completed: false,
                 id: this.state.listItems.length}]
             });
-            this.state.dueToAdd = "";
-            this.state.titleToAdd = "";
-            this.state.tagsToAdd = [];
+            this.setState({
+                dueToAdd: "",
+                titleToAdd: "",
+                tagsToAdd: []
+            });
+            this.sortValues();
+            this.newTag.value = "";
         }
+        
 
     }
 
-    addTag = () => {
-        console.log(this.newTag.current.value);
-        if (!this.state.tags.includes(this.newTag.current.value) && this.newTag.current.value != "") {
-            this.setState(prevState => ({
-                tags: [...prevState.tags,
-                this.newTag.current.value]
-            }));
-        }
-    }
-
-    addTagToTask = (event) => {
-        if (!this.state.tagsToAdd.includes(event.target.value)) {
+    addTagToTask = () => {
+        if (!this.state.tagsToAdd.includes(this.newTag.current.value)) {
             this.setState(prevState => ({
                 tagsToAdd: [...prevState.tagsToAdd,
-                event.target.value]
+                    this.newTag.current.value]
             }));
         }
     }
 
-    sortHandler = (event) => {
+    sortHandler = async (event) => {
+        console.log(this.state.sortState);
         if (this.state.listItems.length > 0) {
-            const temp = [...this.state.listItems];
-            if (event.target.value == "dueSort") {
+            const i = this.state.sortState.indexOf(event.target.value);
+            if (i != -1) {
+                let tempSort = [...this.state.sortState];
+                tempSort.splice(i, 1);
+                await this.setState({sortState: tempSort});
+            } else {
+                await this.setState({sortState: [
+                    ...this.state.sortState,
+                    event.target.value
+                ]})
+            }
+            this.sortValues();
+        }
+    }
+
+    sortValues = () => {
+        const temp = [...this.state.listItems];
+        if (this.state.sortState.length == 1) {
+            if (this.state.sortState[0] == "dueSort") {
                 temp.sort(this.dueSort);
-            } else if (event.target.value == "completedSort") {
+            } else if (this.state.sortState[0] == "completedSort") {
                 temp.sort(this.completedSort);
             }
             this.setState({
                 listItems: temp
             })
+        } else if (this.state.sortState.length == 2) {
+            temp.sort(this.dueAndCompletedSort);
+            this.setState({
+                listItems: temp
+            }) 
         }
-        console.log("due dates");
+        
     }
 
     dueSort = (a, b) => {
@@ -91,22 +110,32 @@ class TodoList extends React.Component {
     }
 
     completedSort = (a, b) => {
-        if (a.completed == true && b.completed == false) {
+        if (a.completed && !b.completed) {
             return 1;
-        } else if (a.completed == false && b.completed == true) {
+        } else if (!a.completed && b.completed) {
             return -1;
         } else {
             return 1;
         }
     }
 
-    // dueAndCompletedSort = (a, b) => {
-
-    // }
+    dueAndCompletedSort = (a, b) => {
+        if (a.completed && !b.completed) {
+            return 1;
+        } else if (!a.completed && b.completed) {
+            return -1;
+        } else {
+            if (a.due > b.due) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    }
 
     removeTag = (tag) => {
         const index = this.state.tagsToAdd.indexOf(tag);
-        console.log(this.state.listItems)
+
         if (index > -1) {
             const temp = this.state.tagsToAdd;
             temp.splice(index, 1);
@@ -116,107 +145,108 @@ class TodoList extends React.Component {
         }
     }
 
-    handleComplete = (event, isChecked) => {
+    handleComplete = async (event) => {
         var temp = [...this.state.listItems];
-        console.log(temp);
         for (var i = 0; i < temp.length; i++) {
             if (temp[i].id == event.target.id) {
-                temp[i].completed = isChecked;
+                temp[i].completed = event.target.checked;
                 break;
             }
         }
-        this.setState[{
+        await this.setState[{
             listItems: temp
-        }]
+        }];
+        this.sortValues();
     }
 
 
 
     render() {
+        const cardStyle = {
+            padding: 6,
+            border: '0px',
+            margin: 5
+        }
         const listItem = this.state.listItems.map((item) =>
-            <Card>
+            <div key={item.id}>
+            <Card style={cardStyle}>
                 <Grid container spacing={2}>
                     <Grid 
                     align="center"
-                    justifyContent="center" 
+                    justify="center" 
                     item sm={2}>
+                        <input className="checkbox"
+                        type="checkbox"
+                        defaultChecked={item.completed}
+                        onChange={this.handleComplete}
+                        id={item.id} />
                     </Grid>
                     <Grid item sm={10}>
                         <ListItem name={item.name} tags={item.tags} due={item.due}/>
                     </Grid>
+
                 </Grid> 
             </Card>
+            </div>
         );
-
-        const tagItems = this.state.tags.map((tag) => 
-            <MenuItem value={tag}>{tag}</MenuItem>
-        );
-
         const selectedTags = this.state.tagsToAdd.map((tag) =>
-            <Grid item sm={3}>
-                <Card>
+            <Grid item>
+                <Card sx={{padding: 2}}>
                     {tag}
                     <span>
-                        <Button id={tag} onClick={this.removeTag.bind(this, tag)}>x</Button>
+                        <Button sx={{margin: 0}} id={tag} onClick={this.removeTag.bind(this, tag)}>x</Button>
                     </span>
                 </Card>
             </Grid> 
         );
 
         return <div>
-            <h1>Todo List</h1>
+            <h1>Bits of Good - Todo List</h1>
+            <h4>Srikant Vasudevan</h4>
             <Grid padding={5} container spacing={2}>
                 <Grid item md={6}>
+                    <Card>
+                    <Grid container>
                     <Grid item sm={12}>
                         <h2>Add a task</h2>
                     </Grid>
-                    <Grid container spacing={2}>
-                        <Grid item sm={4}>
+                    <Grid container padding={5} spacing={2}>
+                        <Grid item sm={12}>
                             <InputLabel>Task Title</InputLabel>
-                            <TextField onChange={this.handleTitleChange} sx={{ width: 1 }} inputRef={this.name}/>
+                            <TextField value={this.state.titleToAdd} onChange={this.handleTitleChange} sx={{ width: 1 }} inputRef={this.name}/>
                         </Grid>
-                        <Grid item sm={4}>
+                        <Grid item sm={12}>
                             <InputLabel>Due Date</InputLabel>
-                            <TextField onChange={this.handleDueDateChange} sx={{ width: 1 }} inputRef={this.date} type="date"/>
+                            <TextField value={this.state.dueToAdd} onChange={this.handleDueDateChange} sx={{ width: 1 }} inputRef={this.date} type="date"/>
                         </Grid>
-                        <Grid item sm={4}>
-                            <InputLabel>Tags</InputLabel>
-                            <Select
-                                value={"default_do_not_add"}
-                                label="tags"
-                                inputRef={this.tagToAdd}
-                                onChange={this.addTagToTask}
-                                sx={{ width: 1 }}
-                            >
-                            <MenuItem value={"default_do_not_add"}>Select a tag</MenuItem>
-                            {tagItems}
-                            </Select>    
-                        </Grid>
+
                         <Grid item sm={12}>
                             <Grid container spacing={2}>
                                 {selectedTags}
                             </Grid>
-                        </Grid>     
-                        <Grid item sm={12}>
-                            <h4>Add a new tag</h4>
-                        </Grid>
+                        </Grid> 
                         
                         <Grid item sm={8}>
                             <InputLabel>New Tag</InputLabel>
                             <TextField sx={{ width: 1 }} inputRef={this.newTag} />
                         </Grid>
                         <Grid item sm={4}>
-                            <Button color='secondary' variant='contained' sx={{ width: 1, height: 1 }} onClick={this.addTag}>Add Tag</Button>
+                            <Button color='secondary' variant='contained' sx={{ width: 1}} onClick={this.addTagToTask}>Add Tag</Button>
                         </Grid>
                         <Grid item sm={12}>
-                            <Button sx={{ width: 1, height: 1 }} onClick={this.handleSubmit} variant="contained">Add Task</Button> 
+                            <Button sx={{ width: 1, height: '90px' }} onClick={this.handleSubmit} variant="contained">Add Task</Button> 
                         </Grid>  
                     </Grid>
+                    </Grid>
+                    </Card>
                 </Grid>
                 <Grid item md={6}>
-                    <Grid container spacing={2}>
+                    <Card sx={{height: 1}}>
+                    <Grid padding={2} container spacing={2}>
                         <Grid item md={12}>
                             <ToggleButtonGroup
+                            color="primary"
+                            value={this.state.sortState}
                             onChange={this.sortHandler}
                             aria-label="text formatting"
                             >
@@ -226,9 +256,6 @@ class TodoList extends React.Component {
                             <ToggleButton value="completedSort" aria-label="italic">
                                 Sort by Completed
                             </ToggleButton>
-                            <ToggleButton value="completedAndDueSort" aria-label="italic">
-                                Sort by Completed and Due Date
-                            </ToggleButton>
                             </ToggleButtonGroup>
                         </Grid>
                         <Grid item md={12}>
@@ -236,6 +263,7 @@ class TodoList extends React.Component {
                         </Grid>
                         
                     </Grid>
+                    </Card>
                     
                 </Grid>
             </Grid>
